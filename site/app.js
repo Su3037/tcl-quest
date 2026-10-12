@@ -1,5 +1,6 @@
 const $ = (q) => document.querySelector(q);
 const esc = (v) => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+document.querySelector('.skip').addEventListener('click',e=>{e.preventDefault();$('#main').focus();$('#main').scrollIntoView();});
 const KEY='tcl-quest-progress-v1';
 let data, active=null, sound=false, busy=false, nextReward=1;
 let state={version:1,completed:[],drafts:{},quiz:[]};

@@ -12,4 +12,4 @@ Precompiled distribution: https://ecky-l.github.io/wacl/releases/wacl.zip (2017-
 - Wacl's bundled extensions include tDOM, rl_json and selected Tcllib modules. They retain their upstream licenses and authorship; see https://github.com/ecky-l/wacl/tree/master/ext and the accompanying upstream license terms. The original author credits are not replaced by this project's MIT license.
 
 All runtime files are hosted locally with the course; learners do not depend on a third-party CDN for execution. Update the runtime only after rerunning all native and WASM checks.
-50d4ecb40c4db0448942332f9562c3cedc8bea38fa89d95ca5e5b9afcc5afb23  /tmp/tcl-wacl.zip
+50d4ecb40c4db0448942332f9562c3cedc8bea38fa89d95ca5e5b9afcc5afb23  wacl.zip
