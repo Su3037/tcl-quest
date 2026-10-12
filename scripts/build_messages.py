@@ -78,7 +78,7 @@ Ctrl / ⌘ + Enter 运行	Ctrl / ⌘ + Enter to run
 输出符合任务要求	Output matches the mission
 正在唤醒 Tcl 引擎……	Waking up the Tcl engine…
 （执行完成，没有输出）	(Finished with no output)
-Tcl 提示：	Tcl says: 
+Tcl 提示：	Tcl says:
 全部检查通过！这一关的 XP 已经领取过了。	All checks passed! You already earned this lesson’s XP.
 还差一点。对照目标输出和提示，再试一次。	Almost there. Compare the target output and hints, then try again.
 检查变量是否先用 set 定义，名字是否拼写一致。	Check that the variable was defined with set and its name is spelled consistently.
@@ -112,11 +112,11 @@ Boss 挑战完成！	Boss challenge complete!
 答一道理解题，试做一个拓展练习。	Answer a concept question and try the extension task.
 答错不会扣分。所有关卡都能自由进入，XP 只在首次通关时领取。	Wrong answers cost no points. All lessons are open, and XP is earned once per lesson.
 按自己的经验选择路线	Choose a route for your experience
-第一次接触代码：	New to coding: 
+第一次接触代码：	New to coding:
 从第 1 关起，先照着例子试，再改一处。不认识的英文把它当作工具名字。	Start at lesson 1, copy a small example and change one thing. Treat unfamiliar command names as names of tools.
-已有编程经验：	Already code: 
+已有编程经验：	Already code:
 先看第 3 关的括号规则，再挑战各区域 Boss。	Review lesson 3’s quoting rules, then try each world’s Boss.
-VLSI 课程学习：	Taking a VLSI course: 
+VLSI 课程学习：	Taking a VLSI course:
 完成基础后进入第 16–20 关。这里的 EDA 操作是教学模拟，商业软件命令请使用课程工具文档。	Finish the basics, then explore lessons 16–20. EDA operations here are teaching models; use your course tool documentation for commercial commands.
 实验室和进度	The lab and your progress
 首次运行下载约 4.4 MB 的本地资源。Tcl 在浏览器 Worker 中执行；每次运行环境独立，5 秒超时。文件操作使用内存文件系统。	The first run loads about 4.4 MB of local resources. Tcl runs in a browser Worker with a fresh environment and a five-second timeout. Files live in memory.
@@ -253,6 +253,7 @@ Tcl 引擎加载失败	Could not load the Tcl engine
 text={}
 for row in PAIRS.strip().splitlines():
  zh,en=row.split('\t',1);text[zh]=en
+for key in ['Tcl 提示：','第一次接触代码：','已有编程经验：','VLSI 课程学习：']:text[key]+=' '
 text.update({'代码区下方的实时剧情窗由实际执行驱动，可以暂停、单步回放或快进。上方的教学分镜可以展开查看。':'The live story below the editor follows actual execution. Pause, step through or jump ahead; expand the teaching guide above when needed.','顶栏可切换中英文。代码草稿与通关进度共享，原生输出保留原样。':'Switch languages in the header. Drafts and progress are shared; native output stays verbatim.','选择剧情分镜':'Choose a story beat','切换演示输入':'Switch example input','猫头鹰向导':'Owl guide','叶子精灵':'Leaf sprite','海狸师傅':'Beaver maker','猫工程师':'Cat engineer','任务完成！':'Mission complete!','实际入选名单':'Names actually selected','切换为英文':'Switch to English'})
 patterns=[
  [r'^foreach · ([0-9]+) / ([0-9]+) 件$',r'foreach · \1 / \2 items'],
