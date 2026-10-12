@@ -36,5 +36,7 @@ class Site(unittest.TestCase):
  def test_publication_guard(self):
   workflow=(ROOT/'.github/workflows/pages.yml').read_text()
   self.assertIn("github.event.repository.visibility == 'public'",workflow)
-  self.assertNotIn('push:',workflow)
+  self.assertIn('workflow_dispatch:',workflow)
+  self.assertIn('branches: [main]',workflow)
+  self.assertIn("'site/**'",workflow)
 if __name__=='__main__':unittest.main()

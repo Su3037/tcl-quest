@@ -12,7 +12,11 @@ Start with a greeting, explore variables and loops, build reusable tools and fin
 
 ## Open the game
 
-The repository is private during development. No public website has been deployed.
+**[Play in your browser →](https://su3037.github.io/tcl-quest/)**
+
+No account, installation or local server is needed. GitHub Pages hosts the files; Tcl runs in each visitor’s browser and never uses the author’s Mac. Switch between English and Chinese in the game header.
+
+For local development or a local copy:
 
 ```sh
 git clone https://github.com/Su3037/tcl-quest.git

@@ -20,7 +20,11 @@
 
 ## 现在就打开互动页面
 
-当前仓库处于私密开发阶段，**尚未发布公共网站**。在电脑上打开：
+**[打开网页版游戏 →](https://su3037.github.io/tcl-quest/)**
+
+无需登录、安装软件或启动本地服务器。网站由 GitHub Pages 托管；代码在访问者自己的浏览器中执行，不使用作者的 Mac。中文与 English 可在游戏顶栏切换。
+
+如需本地开发或离线保存项目：
 
 ```sh
 git clone https://github.com/Su3037/tcl-quest.git
