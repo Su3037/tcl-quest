@@ -1,5 +1,7 @@
 # 09 · 文字变形术
 
+[English](README.en.md) · [课程首页](../../README.md)
+
 路牌文字太乱了。清理空格、统一大小写，再拼成新路牌。
 
 目标：string · split · join。约 10 分钟，首次通关 +100 XP。

@@ -1,5 +1,7 @@
 # 08 · 循环采集机器人
 
+[English](README.en.md) · [课程首页](../../README.md)
+
 机器人可以重复采集，不需要你复制十条指令。
 
 目标：foreach · for · while。约 10 分钟，首次通关 +100 XP。

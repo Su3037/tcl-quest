@@ -5,4 +5,8 @@ from pathlib import Path
 p=argparse.ArgumentParser();p.add_argument('--port',type=int,default=8765);p.add_argument('--host',default='127.0.0.1');a=p.parse_args()
 os.chdir(Path(__file__).resolve().parents[1]/'site')
 print(f'Tcl Quest: http://{a.host}:{a.port}',flush=True)
-http.server.ThreadingHTTPServer((a.host,a.port),http.server.SimpleHTTPRequestHandler).serve_forever()
+class PreviewHandler(http.server.SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header('Cache-Control','no-cache')
+        super().end_headers()
+http.server.ThreadingHTTPServer((a.host,a.port),PreviewHandler).serve_forever()

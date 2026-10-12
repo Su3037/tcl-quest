@@ -1,5 +1,7 @@
 # 18 · 打造会行动的芯片对象
 
+[English](README.en.md) · [课程首页](../../README.md)
+
 设计一张芯片图纸，再从图纸造出多个对象。
 
 目标：TclOO · class · method。约 10 分钟，首次通关 +100 XP。

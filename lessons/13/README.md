@@ -1,5 +1,7 @@
 # 13 · 保存冒险日志
 
+[English](README.en.md) · [课程首页](../../README.md)
+
 离开页面前，把故事写进文件，再读回来。
 
 目标：open · puts · gets · close。约 10 分钟，首次通关 +100 XP。

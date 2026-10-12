@@ -1,5 +1,7 @@
 # 07 · 收集物品清单
 
+[English](README.en.md) · [课程首页](../../README.md)
+
 把钥匙、苹果和地图装进背包，保持每件物品的边界。
 
 目标：list · lindex · llength · lappend。约 10 分钟，首次通关 +100 XP。

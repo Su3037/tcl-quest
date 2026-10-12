@@ -16,9 +16,14 @@ jobs:
         run: |
           python3 scripts/build_curriculum.py
           python3 scripts/build_adventures.py
+          python3 scripts/build_messages.py
+          python3 scripts/build_english.py
+          python3 scripts/build_english_adventures.py
+          python3 scripts/build_trace.py
           node scripts/export_artwork.mjs
+          python3 scripts/build_assets.py
       - name: Check generated files
-        run: git diff --exit-code -- site/curriculum.json site/adventures.json site/media/scenes site/media/party.svg lessons
+        run: git diff --exit-code -- site lessons
       - name: Execute examples and solutions in Tcl
         run: |
           python3 scripts/check.py --all
@@ -28,6 +33,7 @@ jobs:
       - name: Verify site and media
         run: |
           python3 tests/site_integrity.py
+          python3 tests/localization.py
           python3 tests/artwork.py
       - name: Parse JavaScript
         run: |
@@ -35,3 +41,7 @@ jobs:
           node --check site/adventure.js
           node --check site/adventure-art.js
           node --check site/runner.js
+          node --check site/live-runtime.js
+          node --check site/runtime-story.js
+          node --check site/i18n.js
+          node --check site/locale-core.js

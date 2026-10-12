@@ -1,4 +1,5 @@
-import {CAST,portrait,sceneSVG} from './adventure-art.js';
+import {t,localize} from './i18n.js?v=f898bcbff0a5';
+import {CAST,portrait,sceneSVG} from './adventure-art.js?v=f898bcbff0a5';
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let current=null;
 const motionKey='tcl-quest-motion';
@@ -30,7 +31,7 @@ export function mountAdventure(root,lesson,storyboard,onLoad){
   q('.scene-prev').disabled=step===0;q('.scene-next').disabled=step===3;
   el.querySelectorAll('[data-beat]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.beat===step)));
   el.querySelectorAll('[data-variant]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.variant===selection)));
-  q('.scene-preview pre').textContent=v.props.error?`Tcl 错误：${v.props.error}`:v.output||'（空输出）';
+  q('.scene-preview pre').textContent=v.props.error?t(`Tcl 错误：${v.props.error}`):v.output||t('（空输出）');localize(el);
  }
  on(q('.scene-play'),'click',()=>{if(timer){pause();return;}if(step===3)step=0;render();q('.scene-play').textContent='Ⅱ 暂停剧情';q('.scene-play').setAttribute('aria-label','暂停四幕图解');timer=setInterval(()=>{step++;render();if(step===3)pause();},2200);});
  on(q('.scene-prev'),'click',()=>{pause();step=Math.max(0,step-1);render();});

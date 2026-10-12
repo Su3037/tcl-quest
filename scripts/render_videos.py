@@ -6,7 +6,7 @@ import argparse,json,subprocess,tempfile,textwrap
 from pathlib import Path
 from PIL import Image,ImageDraw,ImageFont
 ROOT=Path(__file__).resolve().parents[1]
-p=argparse.ArgumentParser();p.add_argument('--font',default='/System/Library/Fonts/STHeiti Medium.ttc');a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--lang',choices=['zh','en'],default='zh');p.add_argument('--font',default='/System/Library/Fonts/STHeiti Medium.ttc');a=p.parse_args()
 font=ImageFont.truetype(a.font,24);small=ImageFont.truetype(a.font,19);titlefont=ImageFont.truetype(a.font,42)
 mono_path='/System/Library/Fonts/Menlo.ttc'
 if not Path(mono_path).exists():mono_path='/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
@@ -54,6 +54,10 @@ videos=[('第一行代码与变量',[
 ('寻找最差余量','worst 从第一条记录开始，依次保留更小的值。','set worst 0.12\nforeach slack {0.12 -0.25 -0.05} {\n    if {$slack < $worst} {set worst $slack}\n}\nputs "Worst: $worst ns"'),
 ('用字典交付结果','结果可以继续交给别的 Tcl 脚本处理。',analyze),
 ('毕业前的最后检查','这段动画演示非空输入；第 20 关还要处理空报告。',analyze+'\nputs [dict get $result violations]')])]
+if a.lang=='en':
+ translated=json.loads((ROOT/'site/locales/media.en.json').read_text())
+ videos=[(tr['title'],[(heading,caption,old[2]) for (heading,caption),old in zip(tr['scenes'],original[1])]) for tr,original in zip(translated,videos)]
+suffix='-en' if a.lang=='en' else ''
 media=ROOT/'site/media';media.mkdir(exist_ok=True)
 def wrap(draw,txt,f,maxw):
  lines=[];line=''
@@ -62,7 +66,7 @@ def wrap(draw,txt,f,maxw):
   else:line+=c
  lines.append(line);return lines
 for v,(title,scenes) in enumerate(videos,1):
- transcript=[title,'原创无配音代码演示 · 每段 10 秒 · 输出来自真实 Tcl'];vtt=['WEBVTT','']
+ transcript=[title,'Original silent demo · 10 seconds per scene · Output from real Tcl' if a.lang=='en' else '原创无配音代码演示 · 每段 10 秒 · 输出来自真实 Tcl'];vtt=['WEBVTT','']
  with tempfile.TemporaryDirectory(prefix='tcl-video-') as tmp:
   for i,(heading,caption,code) in enumerate(scenes):
    run=subprocess.run(['tclsh'],input=code,text=True,capture_output=True,timeout=5)
@@ -70,23 +74,23 @@ for v,(title,scenes) in enumerate(videos,1):
    out=run.stdout.rstrip('\n')
    im=Image.new('RGB',(1280,720),'#f5f4ec');d=ImageDraw.Draw(im)
    d.rounded_rectangle((38,34,90,85),12,fill='#294c3c');d.text((50,39),'t_',font=font,fill='#c3ef9f')
-   d.text((108,45),'Tcl Quest / 芯片岛冒险',font=font,fill='#294c3c');d.text((1060,47),f'WORLD 0{v}',font=small,fill='#66785b')
+   d.text((108,45),('Tcl Quest / Chip Island' if a.lang=='en' else 'Tcl Quest / 芯片岛冒险'),font=font,fill='#294c3c');d.text((1060,47),f'WORLD 0{v}',font=small,fill='#66785b')
    d.text((45,112),heading,font=titlefont,fill='#243b32')
    d.rounded_rectangle((45,184,815,596),16,fill='#23362e');d.text((66,202),'quest.tcl   /   REAL TCL OUTPUT',font=mono,fill='#afc69e')
    for j,line in enumerate(code.splitlines()):
     d.text((66,246+j*24),f'{j+1:02d}',font=small,fill='#728a74');d.text((104,246+j*24),line,font=mono,fill='#e1efcf')
-   d.rounded_rectangle((837,184,1235,596),16,fill='#e5ecda');d.text((860,205),'运行结果',font=font,fill='#294c3c')
+   d.rounded_rectangle((837,184,1235,596),16,fill='#e5ecda');d.text((860,205),('Output' if a.lang=='en' else '运行结果'),font=font,fill='#294c3c')
    for j,line in enumerate(out.splitlines()):
     for k,piece in enumerate(textwrap.wrap(line,25) or ['']):d.text((860,255+(j+k)*34),piece,font=mono,fill='#365d35')
    caplines=wrap(d,caption,font,1170)
    for j,line in enumerate(caplines):d.text((50,618+j*31),line,font=font,fill='#334d3e')
    d.rounded_rectangle((45,697,1235,703),3,fill='#d3ddc7');d.rounded_rectangle((45,697,int(45+1190*(i+1)/6),703),3,fill='#7a9e55')
    path=Path(tmp)/f'{i}.png';im.save(path)
-   if i==0:im.save(media/f'demo-{v}.png')
+   if i==0:im.save(media/f'demo-{v}{suffix}.png')
    begin=f'00:{i*10:02d}.000';end=f'00:{(i+1)*10:02d}.000' if i<5 else '01:00.000'
    vtt.extend([f'{begin} --> {end}',caption,''])
-   transcript.extend(['',f'[{i*10:02d}–{(i+1)*10:02d} 秒] {heading}',caption,'',code,'','输出：',out])
+   transcript.extend(['',f'[{i*10:02d}–{(i+1)*10:02d} {"seconds" if a.lang=="en" else "秒"}] {heading}',caption,'',code,'',('Output:' if a.lang=='en' else '输出：'),out])
   listing=Path(tmp)/'frames.txt';listing.write_text(''.join(f"file '{i}.png'\nduration 10\n" for i in range(6))+"file '5.png'\n")
-  subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-f','concat','-safe','0','-i',str(listing),'-t','60','-r','10','-c:v','libx264','-preset','fast','-crf','25','-pix_fmt','yuv420p','-movflags','+faststart',str(media/f'demo-{v}.mp4')],check=True)
- (media/f'demo-{v}.vtt').write_text('\n'.join(vtt));(media/f'demo-{v}.txt').write_text('\n'.join(transcript)+'\n')
+  subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-f','concat','-safe','0','-i',str(listing),'-t','60','-r','10','-c:v','libx264','-preset','fast','-crf','25','-pix_fmt','yuv420p','-movflags','+faststart',str(media/f'demo-{v}{suffix}.mp4')],check=True)
+ (media/f'demo-{v}{suffix}.vtt').write_text('\n'.join(vtt));(media/f'demo-{v}{suffix}.txt').write_text('\n'.join(transcript)+'\n')
  print(f'Rendered demo-{v}.mp4',flush=True)

@@ -2,6 +2,8 @@
 
 # Tcl Quest · 芯片岛冒险
 
+[English](README.en.md) · **中文**
+
 **写下第一行代码，开启你的芯片岛冒险。**
 
 面向零基础大众的中文 Tcl 教学仓库 · VLSI 课程项目
@@ -45,7 +47,11 @@ python3 scripts/serve.py --host 0.0.0.0
 | 🔧 工具工坊 | [11](lessons/11)–[15](lessons/15) | 过程、字典与数组、文件、错误处理 | 通用平均值工具 |
 | 🏙️ 芯片城 | [16](lessons/16)–[20](lessons/20) | 命名空间、正则、TclOO、模块化、时序余量 | 时序报告分析器 |
 
-每关先由机器人芯芯和区域 NPC 带你看一段四幕图解：能播放、暂停、逐步查看，也能切换输入观察变化。20 个场景各有与知识点对应的插图和动作，例如变量背包、金币门、循环采集、文件日记和时序路径。60 组演示输入全部经过真实 Tcl 验证，可一键送入实验室运行。
+右侧编辑器下方新增**实时剧情窗**：运行你的代码后，真实 Tcl 的变量更新、循环、返回值和输出会驱动动画。比如改用 `{3 5 9}` 求和，芯芯会按实际总数 **3 → 8 → 17** 推进。支持暂停、单步回放、重播与快进；注释和未执行分支不会触发操作。详情见[执行驱动剧情](docs/RUNTIME.md)。
+
+游戏顶栏可切换 **English / 中文**，涵盖课程、NPC、场景、指南和视频；草稿与进度共享，当前回放位置保留，用户代码与原生输出不翻译。
+
+每关还由机器人芯芯和区域 NPC 带你看一段四幕图解：能播放、暂停、逐步查看，也能切换输入观察变化。20 个场景各有与知识点对应的插图和动作，例如变量背包、金币门、循环采集、文件日记和时序路径。60 组演示输入全部经过真实 Tcl 验证，可一键送入实验室运行。
 
 每关还包括概念说明、可运行示例、待完成代码、目标输出、两级提示、理解题、易错提醒、拓展任务和参考解法。网页与仓库讲义来自同一份课程源文件。剧情图解解释指定示例，实验室的实时回声显示你自己代码的真实输出，详见[角色与场景说明](docs/ADVENTURE.md)。
 
@@ -93,16 +99,25 @@ python3 scripts/check.py 1 lessons/01/starter.tcl
 ```sh
 python3 scripts/build_curriculum.py  # 修改课程源后重新生成讲义和 JSON
 python3 scripts/build_adventures.py # 课程生成后更新剧情及演示输入
-node scripts/export_artwork.mjs    # 导出仓库讲义的插图和角色图鉴
+python3 scripts/build_messages.py  # UI 翻译目录
+python3 scripts/build_english.py   # 英文课程与讲义
+python3 scripts/build_english_adventures.py # 英文剧情
+python3 scripts/build_trace.py     # 打包 Tcl 执行观察器
+node scripts/export_artwork.mjs    # 导出中英文插图和角色图鉴
+python3 scripts/build_assets.py    # 同步本地资源版本，防止旧缓存混用
 python3 scripts/check.py --all      # 真 tclsh 执行所有示例和答案
 node tests/wasm.mjs                 # 验证网页实际使用的 WASM 引擎与行为检查
 python3 tests/adventures.py         # 原生 Tcl 执行全部 60 组剧情输入
+python3 tests/localization.py      # 语言版本及英文媒体
 python3 tests/artwork.py            # 检查 240 个场景帧的 SVG
 python3 tests/site_integrity.py     # 内容、资源及视频完整性
 node --check site/app.js
 node --check site/runner.js
 node --check site/adventure.js
 node --check site/adventure-art.js
+node --check site/live-runtime.js
+node --check site/runtime-story.js
+node --check site/i18n.js
 ```
 
 重新生成视频需要 Pillow、ffmpeg 和中文字体，详见 [视频制作说明](docs/VIDEOS.md)。仓库已包含可直接播放的成品，无需重新生成。

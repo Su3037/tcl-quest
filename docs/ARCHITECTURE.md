@@ -31,3 +31,10 @@ localStorage 键为 `tcl-quest-progress-v1`，保存完成关卡、代码草稿�
 - 单次运行不可交互输入；请把输入写为变量或过程参数。
 - 引擎为上游 2017 年预编译包；本项目固定资源和哈希、保留授权，更新时必须重新验证所有关卡。
 - 所有关卡开放，答案可见；检查用于学习反馈，不用于考试防作弊。
+
+
+## 执行事件与语言版本
+
+Worker 现在使用 `trace.tcl` 的 Tcl execution observer 推送真实参数、返回值、变量和 stdout 事件。`runtime-story.js` 将事件映射为关卡状态，`live-runtime.js` 在编辑器下方回放。评分检查前停用观察。详见 [RUNTIME.md](RUNTIME.md)。
+
+`curriculum.en.json` 和 `adventures.en.json` 来自人工编写的英文源文件。`i18n.js` 与 `locale-core.js` 翻译界面和可访问性标签，保留原生代码/输出。中英文各自提供四段视频、字幕、文字稿和每关静态插图。进度不按语言拆分。
