@@ -1,6 +1,6 @@
-import {sceneSVG,CAST} from './adventure-art.js?v=f898bcbff0a5';
-import {createRuntimeModel,advanceRuntime} from './runtime-story.js?v=f898bcbff0a5';
-import {language,t,localize} from './i18n.js?v=f898bcbff0a5';
+import {sceneSVG,CAST} from './adventure-art.js?v=9c235119cbfd';
+import {createRuntimeModel,advanceRuntime} from './runtime-story.js?v=9c235119cbfd';
+import {language,t,localize} from './i18n.js?v=9c235119cbfd';
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const b=(zh,en)=>language()==='en'?en:zh;
 let live=null;

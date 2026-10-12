@@ -30,6 +30,8 @@ jobs:
           python3 tests/adventures.py
       - name: Verify actual browser WASM runtime
         run: node tests/wasm.mjs
+      - name: Verify sound lifecycle
+        run: node tests/sound.mjs
       - name: Verify site and media
         run: |
           python3 tests/site_integrity.py
@@ -45,3 +47,4 @@ jobs:
           node --check site/runtime-story.js
           node --check site/i18n.js
           node --check site/locale-core.js
+          node --check site/sound.js

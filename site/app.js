@@ -1,13 +1,44 @@
-import {initLanguage,language,setLanguage,t,localize,observeTranslations} from './i18n.js?v=f898bcbff0a5';
-import {mountRuntime,clearRuntime,runtimeSnapshot,startRuntime,pushRuntime,finishRuntime,editRuntime,afterRuntime} from './live-runtime.js?v=f898bcbff0a5';
-import {mountAdventure,clearAdventure,updateAdventure} from './adventure.js?v=f898bcbff0a5';
-import {CAST,portrait,partyHTML,bindParty,setArtTranslator} from './adventure-art.js?v=f898bcbff0a5';
+import {createSoundPlayer} from './sound.js?v=9c235119cbfd';
+import {initLanguage,language,setLanguage,t,localize,observeTranslations} from './i18n.js?v=9c235119cbfd';
+import {mountRuntime,clearRuntime,runtimeSnapshot,startRuntime,pushRuntime,finishRuntime,editRuntime,afterRuntime} from './live-runtime.js?v=9c235119cbfd';
+import {mountAdventure,clearAdventure,updateAdventure} from './adventure.js?v=9c235119cbfd';
+import {CAST,portrait,partyHTML,bindParty,setArtTranslator} from './adventure-art.js?v=9c235119cbfd';
 const $ = (q) => document.querySelector(q);
 const esc = (v) => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 document.querySelector('.skip').addEventListener('click',e=>{e.preventDefault();$('#main').focus();$('#main').scrollIntoView();});
 const KEY='tcl-quest-progress-v1';
-let data, storyboards, courses, stories, viewGeneration=0, lastExecution=null, active=null, sound=false, busy=false, nextReward=1;
+let data, storyboards, courses, stories, viewGeneration=0, lastExecution=null, active=null, busy=false, nextReward=1;
 let state={version:1,completed:[],drafts:{},quiz:[]};
+const SOUND_KEY='tcl-quest-sound-v1';
+let audioStatus='off';
+const audioMessages={
+ off:'音效已关闭。打开开关可试听；运行、检查和首次通关时播放提示音。',
+ pending:'音效等待启用。点击开关或运行代码可重试。',
+ ready:'音效已开启。打开开关可试听；运行、检查和首次通关时播放提示音。',
+ blocked:'浏览器暂未允许播放音效。请关闭再打开音效，并检查标签页是否静音。',
+ unsupported:'此浏览器暂不支持游戏音效。'
+};
+function refreshSound(){
+ $('#sound').textContent=t('音效 '+(audio.enabled?'开':'关'));
+ $('#sound').setAttribute('aria-pressed',String(audio.enabled));
+ $('#sound').dataset.audioState=audioStatus;
+ $('#sound').title=t(audioMessages[audioStatus]);
+ $('#sound-status').textContent=t(audioMessages[audioStatus]);
+}
+const audio=createSoundPlayer({onStatus:value=>{if(audioStatus!==value){audioStatus=value;refreshSound();}}});
+let savedSound=false;try{savedSound=localStorage.getItem(SOUND_KEY)==='on';}catch{}
+audio.setEnabled(savedSound,{preview:false});refreshSound();
+$('#sound').onclick=()=>{
+ const enabled=!audio.enabled;
+ const preview=audio.setEnabled(enabled);
+ try{localStorage.setItem(SOUND_KEY,enabled?'on':'off');}catch{}
+ preview.then(ok=>{if(audio.enabled)toast(ok?'音效已开启，正在播放试听音。':audioMessages[audioStatus]);});
+};
+// Restore a suspended context when a visitor returns to the page and interacts.
+for(const event of ['pointerdown','keydown'])document.addEventListener(event,e=>{
+ if(e.isTrusted&&e.target?.id!=='sound'&&audio.enabled)void audio.unlock();
+},{capture:true});
+
 function validateState(s){if(!s||s.version!==1||!Array.isArray(s.completed)||!s.completed.every(n=>Number.isInteger(n)&&n>=1&&n<=20)||!s.drafts||typeof s.drafts!=='object'||Array.isArray(s.drafts))throw Error('进度文件格式不正确');return {version:1,completed:[...new Set(s.completed)],drafts:Object.fromEntries(Object.entries(s.drafts).filter(([k,v])=>/^([1-9]|1\d|20)$/.test(k)&&typeof v==='string'&&v.length<100000)),quiz:Array.isArray(s.quiz)?s.quiz.filter(n=>Number.isInteger(n)&&n>=1&&n<=20):[]};}
 try{const old=localStorage.getItem(KEY);if(old)state=validateState(JSON.parse(old));}catch{}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{toast('浏览器未能保存进度，请导出备份。');}}
@@ -31,7 +62,7 @@ function engineError(key){const e=new Error(t(key));e.translationKey=key;return 
 function evalInWorker(code,checks=[],onEvent=()=>{}){
  return new Promise((resolve,reject)=>{
   let done=false,traceLimit=false,unavailable=false;
-  const worker=new Worker(new URL('runner.js?v=f898bcbff0a5',import.meta.url));
+  const worker=new Worker(new URL('runner.js?v=9c235119cbfd',import.meta.url));
   let timer=setTimeout(()=>finish(engineError('引擎加载超过 25 秒。请检查页面是否通过 HTTP 打开，或刷新重试。')),25000);
   function finish(err,value){if(done)return;done=true;clearTimeout(timer);worker.terminate();stopRun=null;err?reject(err):resolve({...value,traceLimit,unavailable});}
   stopRun=()=>finish(engineError('本次运行已停止，代码仍保留。'));
@@ -49,6 +80,7 @@ function evalInWorker(code,checks=[],onEvent=()=>{}){
 }
 async function execute(check){
  if(busy||!active)return;
+ void audio.play('run');
  const l=active,generation=viewGeneration;busy=true;
  $('#run').disabled=$('#check').disabled=$('#language').disabled=true;$('#stop').hidden=false;
  $('#output').classList.remove('error');$('#output').textContent=t('正在唤醒 Tcl 引擎……');$('#test-results').textContent='';
@@ -63,6 +95,7 @@ async function execute(check){
   lastExecution={...r,lesson:l.id,check};
   const output=r.output||r.result||t('（执行完成，没有输出）');$('#output').textContent=output;
   if(r.error){
+   void audio.play('error');
    $('#output').classList.add('error');$('#output').textContent=(r.output?r.output+'\n\n':'')+t('Tcl 提示：')+r.error+'\n\n'+t(explainError(r.error));
    updateAdventure({status:'error',output:(r.output?r.output+'\n':'')+r.error});finishRuntime({done:true,error:r.error,traceLimit:r.traceLimit,unavailable:r.unavailable});return;
   }
@@ -71,15 +104,17 @@ async function execute(check){
    const tests=[{label:t('输出符合任务要求'),ok:r.output.replace(/\n+$/,'')===l.expected},...r.tests];
    $('#test-results').innerHTML=tests.map(test=>`<div>${test.ok?'✓':'○'} ${esc(test.label)}${test.error?`: ${esc(test.error)}`:''}</div>`).join('');
    const passed=tests.every(test=>test.ok);
+   void audio.play(passed?'success':'error');
    finishRuntime({done:true,validation:passed?'passed':'failed',traceLimit:r.traceLimit,unavailable:r.unavailable});
    updateAdventure({status:passed?'passed':'failed',output});
    if(passed){
     if(!state.completed.includes(l.id)){state.completed.push(l.id);save();afterRuntime(()=>{if(generation===viewGeneration)reward(l);});}
     else toast('全部检查通过！这一关的 XP 已经领取过了。');
    }else toast('还差一点。对照目标输出和提示，再试一次。');
-  }else finishRuntime({done:true,traceLimit:r.traceLimit,unavailable:r.unavailable});
+  }else{void audio.play('success');finishRuntime({done:true,traceLimit:r.traceLimit,unavailable:r.unavailable});}
  }catch(e){
   if(generation!==viewGeneration)return;
+  void audio.play('error');
   lastExecution={lesson:l.id,rawFailure:e.translationKey||e.message};$('#output').classList.add('error');$('#output').textContent=e.message;updateAdventure({status:'error',output:e.message});finishRuntime({done:true,error:e.message});
  }finally{
   busy=false;$('#language').disabled=false;
@@ -87,8 +122,8 @@ async function execute(check){
  }
 }
 function explainError(s){if(/can't read .*no such variable/.test(s))return '检查变量是否先用 set 定义，名字是否拼写一致。';if(/invalid command name/.test(s))return '检查命令拼写和大小写。EDA 工具扩展命令不一定能在普通 Tcl 中运行。';if(/missing close-brace/.test(s))return '花括号没有配对：检查每一个 { 是否都有对应的 }。';if(/missing close-bracket/.test(s))return '方括号没有配对：检查 [ 和 ]。';if(/wrong # args/.test(s))return '参数数量不对。检查空格、引号和命令的参数顺序。';return '从错误信息里的命令和行号开始检查，或者打开提示，和示例逐行比较。';}
-function reward(l){$('#reward-party').innerHTML=portrait('robot','success')+portrait(CAST[l.world+1].kind);nextReward=l.id<20?l.id+1:0;$('#reward-title').textContent=l.boss?'Boss 挑战完成！':'又学会一项本领！';$('#reward-body').textContent=`${l.title} · +${l.xp} XP。你已经走过 ${state.completed.length} / 20 关。`;$('#reward-badge').textContent=l.boss?`✦ 获得徽章：${data.worlds[l.world].badge}`:'一行代码，一小步进步。';$('#reward-next').textContent=l.id===20?'回到冒险地图 →':'继续冒险 →';$('#celebration').showModal();if(sound){try{const ctx=new (window.AudioContext||window.webkitAudioContext)();[523,659,784].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;g.gain.value=.06;o.start(ctx.currentTime+i*.13);o.stop(ctx.currentTime+i*.13+.13);});setTimeout(()=>ctx.close(),900);}catch{}}}
-$('#reward-next').onclick=()=>{$('#celebration').close();location.hash=nextReward?`#level/${nextReward}`:'#map';};$('#reward-close').onclick=()=>{$('#celebration').close();};$('#sound').onclick=()=>{sound=!sound;$('#sound').textContent='音效 '+(sound?'开':'关');$('#sound').setAttribute('aria-pressed',String(sound));};
+function reward(l){$('#reward-party').innerHTML=portrait('robot','success')+portrait(CAST[l.world+1].kind);nextReward=l.id<20?l.id+1:0;$('#reward-title').textContent=l.boss?'Boss 挑战完成！':'又学会一项本领！';$('#reward-body').textContent=`${l.title} · +${l.xp} XP。你已经走过 ${state.completed.length} / 20 关。`;$('#reward-badge').textContent=l.boss?`✦ 获得徽章：${data.worlds[l.world].badge}`:'一行代码，一小步进步。';$('#reward-next').textContent=l.id===20?'回到冒险地图 →':'继续冒险 →';$('#celebration').showModal();void audio.play('reward');}
+$('#reward-next').onclick=()=>{$('#celebration').close();location.hash=nextReward?`#level/${nextReward}`:'#map';};$('#reward-close').onclick=()=>{$('#celebration').close();};
 const videoTitles=['第一行代码与变量','列表、条件与循环','过程与安全计算','一份报告，一次芯片冒险'];
 function videos(){active=null;const suffix=language()==='en'?'-en':'';$('#view').innerHTML=`<section class="section-page"><span class="eyebrow">WATCH · PAUSE · TRY</span><h1>把看懂，变成会做。</h1><p class="intro">四段原创代码演示，配中文画面字幕。随时暂停，回到实验室照着试。<br>视频没有配音；每段都有文字稿，读文字也能完整学习。</p><div class="video-grid">${videoTitles.map((t,i)=>`<article class="video-card"><video controls preload="metadata" playsinline poster="media/demo-${i+1}${suffix}.png"><source src="media/demo-${i+1}${suffix}.mp4" type="video/mp4"><track kind="captions" srclang="${language()==='en'?'en':'zh'}" label="${language()==='en'?'English':'中文'}" src="media/demo-${i+1}${suffix}.vtt" default>浏览器不支持视频，请阅读下方文字稿。</video><div class="video-info"><span class="eyebrow">WORLD 0${i+1} · 约 1 分钟</span><h2>${t}</h2><p>${data.worlds[i].subtitle}，跟着代码、输出和解释走一遍。</p><a href="#level/${i*5+1}">去对应关卡练一练 →</a> · <a href="media/demo-${i+1}${suffix}.txt" target="_blank">阅读文字稿</a> · <a href="media/demo-${i+1}${suffix}.mp4" download>下载视频</a></div></article>`).join('')}</div></section>`;}
 function guide(){active=null;$('#view').innerHTML=`<section class="section-page"><span class="eyebrow">EVERYONE STARTS SOMEWHERE</span><h1>不用赶路。这里没有倒计时。</h1><p class="intro">你只需要会使用浏览器。可以自己探索，也可以和朋友、家长或老师一起学。建议每次学一到两关，约 10–30 分钟。</p><div class="guide-cards"><article class="guide-card"><h2>每关怎么玩？</h2><ol><li>读故事和图解，认识一个新概念。</li><li>运行小例子，猜猜修改一行会发生什么。</li><li>点击「恢复起始代码」，完成任务。</li><li>点「提交挑战」，通过检查就获得 XP。</li><li>答一道理解题，试做一个拓展练习。</li></ol><p>答错不会扣分。所有关卡都能自由进入，XP 只在首次通关时领取。</p></article><article class="guide-card"><h2>按自己的经验选择路线</h2><p><strong>第一次接触代码：</strong>从第 1 关起，先照着例子试，再改一处。不认识的英文把它当作工具名字。</p><p><strong>已有编程经验：</strong>先看第 3 关的括号规则，再挑战各区域 Boss。</p><p><strong>VLSI 课程学习：</strong>完成基础后进入第 16–20 关。这里的 EDA 操作是教学模拟，商业软件命令请使用课程工具文档。</p></article><article class="guide-card"><h2>实验室和进度</h2><p>代码区下方的实时剧情窗由实际执行驱动，可以暂停、单步回放或快进。上方的教学分镜可以展开查看。</p><p>顶栏可切换中英文。代码草稿与通关进度共享，原生输出保留原样。</p><p>首次运行下载约 4.4 MB 的本地资源。Tcl 在浏览器 Worker 中执行；每次运行环境独立，5 秒超时。文件操作使用内存文件系统。</p><p>草稿、XP 和徽章保存在当前浏览器，不跨设备同步。使用下面的导出、导入功能转移进度。导入会替换当前进度。</p><p>这是自学记录，不是防作弊成绩系统。</p></article><article class="guide-card"><h2>想在电脑或云端继续？</h2><p>本地安装 Tcl 8.6+ 后运行：</p><pre class="code-block">tclsh lessons/01/starter.tcl\npython3 scripts/check.py 1 lessons/01/starter.tcl</pre><p>仓库提供 Dev Container，可通过 GitHub Codespaces 使用。GitHub 可能按套餐限制或计费；网页实验室本身不需要账户。</p><p><a href="https://github.com/Su3037/tcl-quest" target="_blank" rel="noopener">打开仓库查看安装说明 ↗</a></p></article></div><h2>你的冒险徽章</h2><div class="badge-row">${data.worlds.map((w,i)=>`<div class="badge ${state.completed.includes((i+1)*5)?'earned':''}">${state.completed.includes((i+1)*5)?'✦':'◇'} ${w.badge}</div>`).join('')}</div><div class="guide-tools"><button id="export" class="primary">导出学习进度</button><button id="import" class="secondary">导入学习进度</button><input id="import-file" type="file" accept="application/json,.json" hidden><button id="certificate" class="secondary">导出学习记录</button></div><p class="intro">课程设计参考老师的 <a href="https://sjtu-yongfu-research-grp.github.io/tcl-language/" target="_blank" rel="noopener">Tcl Language Course</a>。这里的故事、关卡、图解与视频为本项目原创；Tcl 引擎采用 Wacl，授权文件见仓库 vendor 目录。</p></section>`;
@@ -100,7 +135,7 @@ $('#export').onclick=()=>download('tcl-quest-progress.json',JSON.stringify(state
 };}
 
 function route(preserve=false){const snapshot=preserve===true?runtimeSnapshot():null;viewGeneration++;clearAdventure();clearRuntime();if(busy&&stopRun)stopRun();const hash=location.hash||'#map';document.querySelectorAll('[data-nav]').forEach(a=>{if(hash==='#'+a.dataset.nav)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});if(hash.startsWith('#level/'))lesson(Number(hash.split('/')[1]),snapshot);else if(hash==='#videos')videos();else if(hash==='#guide')guide();else map();localize(document.body);window.scrollTo(0,0);}
-function refreshLanguage(){setLanguage(language());data=courses[language()];storyboards=stories[language()];setArtTranslator(t);$('#language').textContent=language()==='en'?'中文':'English';$('#language').setAttribute('aria-label',language()==='en'?'Switch to Chinese':'切换为英文');}
+function refreshLanguage(){setLanguage(language());refreshSound();data=courses[language()];storyboards=stories[language()];setArtTranslator(t);$('#language').textContent=language()==='en'?'中文':'English';$('#language').setAttribute('aria-label',language()==='en'?'Switch to Chinese':'切换为英文');}
 $('#language').onclick=()=>{const y=scrollY,editor=$('#editor'),selection=editor?[editor.selectionStart,editor.selectionEnd]:null,open=$('.storyboard-details')?.open;setLanguage(language()==='en'?'zh':'en');refreshLanguage();route(true);if(open&&$('.storyboard-details'))$('.storyboard-details').open=true;if(selection&&$('#editor'))$('#editor').setSelectionRange(...selection);if(lastExecution?.lesson===active?.id){
  const r=lastExecution;
  $('#output').textContent=r.rawFailure?t(r.rawFailure):r.error?(r.output?r.output+'\n\n':'')+t('Tcl 提示：')+r.error+'\n\n'+t(explainError(r.error)):r.output||r.result||t('（执行完成，没有输出）');

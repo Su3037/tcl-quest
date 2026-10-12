@@ -19,6 +19,7 @@ class Site(unittest.TestCase):
     for key in ('solution','starter','example'):self.assertEqual((d/(key+'.tcl')).read_text(),l[key]+'\n')
     self.assertIn(l['task'],(d/'README.md').read_text())
  def test_assets(self):
+  self.assertTrue((ROOT/'site/sound.js').is_file())
   for f in ['app.js','adventure.js','adventure-art.js','adventures.json','curriculum.en.json','adventures.en.json','live-runtime.js','runtime-story.js','i18n.js','locale-core.js','locales/en.json','trace.tcl','trace-source.js','style.css','curriculum.json','runner.js','icon.svg','vendor/require.js','vendor/wacl.js','vendor/wacl.wasm','vendor/wacl-library.data','vendor/wacl-custom.data']:
    self.assertTrue((ROOT/'site'/f).is_file(),f)
   for i in range(1,5):

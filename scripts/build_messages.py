@@ -11,6 +11,13 @@ PAIRS='''
 演示放映室	Demo Theater
 新手指南	Getting Started
 切换通关音效	Toggle completion sounds
+打开开关可试听；运行、检查和首次通关时播放提示音。	Enable to preview sounds for running, checking and first completion.
+音效已关闭。打开开关可试听；运行、检查和首次通关时播放提示音。	Sound is off. Enable to preview sounds for running, checking and first completion.
+音效等待启用。点击开关或运行代码可重试。	Sound is waiting for activation. Toggle sound or run code to retry.
+音效已开启。打开开关可试听；运行、检查和首次通关时播放提示音。	Sound is on. Enable to preview sounds for running, checking and first completion.
+浏览器暂未允许播放音效。请关闭再打开音效，并检查标签页是否静音。	The browser has not allowed sound. Switch it off and on, and check that the tab is not muted.
+此浏览器暂不支持游戏音效。	This browser does not support game sounds.
+音效已开启，正在播放试听音。	Sound is on. Playing a preview.
 音效 关	Sound off
 音效 开	Sound on
 继续冒险 →	Continue the adventure →

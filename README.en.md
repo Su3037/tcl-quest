@@ -88,3 +88,5 @@ Development requires Python 3, Node.js 18+ and Tcl 8.6+. See the Chinese README 
 This course teaches Tcl through simplified chip-design data. `lab::area` and `mockFlow` are teaching models, not commercial EDA engines. The final project does not replace a vendor timing-report parser or generate GDS.
 
 The course scope references the teacher’s [Tcl Language Course](https://sjtu-yongfu-research-grp.github.io/tcl-language/). Original stories, illustrations and videos were created for this repository. Original material is licensed under [MIT](LICENSE); the bundled Tcl/Wacl/RequireJS runtime retains its own licenses in [vendor](site/vendor/README.md).
+
+Game sounds are off by default. Enable sound in the header to hear a preview; running code, check results and first completion also play short cues. Your sound preference stays in this browser. If sound is blocked, toggle it off and on and check that the browser tab is not muted.

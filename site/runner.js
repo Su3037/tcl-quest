@@ -1,6 +1,6 @@
 /* One Worker per run: fresh Tcl interpreter and virtual filesystem. */
 importScripts('vendor/require.js');
-importScripts('trace-source.js?v=f898bcbff0a5');
+importScripts('trace-source.js?v=9c235119cbfd');
 require.config({baseUrl:new URL('.',self.location.href).href,paths:{tcl:'vendor'}});
 require(['tcl/wacl'],function(wacl){
   wacl.onReady(function(interp){

@@ -1,5 +1,5 @@
-import {t,localize} from './i18n.js?v=f898bcbff0a5';
-import {CAST,portrait,sceneSVG} from './adventure-art.js?v=f898bcbff0a5';
+import {t,localize} from './i18n.js?v=9c235119cbfd';
+import {CAST,portrait,sceneSVG} from './adventure-art.js?v=9c235119cbfd';
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let current=null;
 const motionKey='tcl-quest-motion';
