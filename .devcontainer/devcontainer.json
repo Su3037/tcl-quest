@@ -1,0 +1,8 @@
+{
+  "name": "Tcl Quest Classroom",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y tcl python3 nodejs",
+  "forwardPorts": [8765],
+  "portsAttributes": {"8765": {"label": "Tcl Quest preview", "onAutoForward": "notify"}},
+  "customizations": {"vscode": {"settings": {"editor.tabSize": 4, "files.associations": {"*.tcl": "tcl"}}}}
+}

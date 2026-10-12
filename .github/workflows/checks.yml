@@ -1,0 +1,28 @@
+name: Verify curriculum and runtime
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Tcl
+        run: sudo apt-get update && sudo apt-get install -y tcl
+      - name: Generate curriculum
+        run: python3 scripts/build_curriculum.py
+      - name: Check generated files
+        run: git diff --exit-code -- site/curriculum.json lessons
+      - name: Execute examples and solutions in Tcl
+        run: python3 scripts/check.py --all
+      - name: Verify actual browser WASM runtime
+        run: node tests/wasm.mjs
+      - name: Verify site and media
+        run: python3 tests/site_integrity.py
+      - name: Parse JavaScript
+        run: |
+          node --check site/app.js
+          node --check site/runner.js
