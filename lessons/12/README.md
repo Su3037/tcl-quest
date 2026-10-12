@@ -4,6 +4,10 @@
 
 目标：dict · array。约 10 分钟，首次通关 +100 XP。
 
+![芯芯与伙伴的第 12 关场景](../../site/media/scenes/level-12.svg)
+
+网页中可播放四幕剧情、切换输入，与 NPC 一起观察代码。打开方式见[仓库首页](../../README.md#现在就打开互动页面)。
+
 字典 dict 用键和值记录信息，像“hp 对应 80，name 对应 Ada”的档案。dict get 取值，dict set 修改，dict exists 检查键是否存在。
 
 Tcl 还有数组 array：set hero(hp) 80。数组是一组变量元素，字典则是一个可以作为参数传递的值。本关练习字典，不把两者混为一谈。

@@ -6,13 +6,13 @@
 
 面向零基础大众的中文 Tcl 教学仓库 · VLSI 课程项目
 
-20 个小任务 · 4 个 Boss · 图解讲义 · 4 段视频 · 浏览器真 Tcl 实验室
+20 个互动场景 · 80 幕剧情 · 5 位统一风格角色 · 4 个 Boss · 4 段视频 · 浏览器真 Tcl 实验室
 
-[从第 1 关开始](lessons/01/README.md) · [教学使用指南](docs/TEACHING.md) · [发布网站](docs/PUBLISHING.md) · [设计与技术说明](docs/ARCHITECTURE.md)
+[从第 1 关开始](lessons/01/README.md) · [教学使用指南](docs/TEACHING.md) · [发布网站](docs/PUBLISHING.md) · [设计与技术说明](docs/ARCHITECTURE.md) · [角色与场景说明](docs/ADVENTURE.md)
 
 </div>
 
-![芯片岛冒险演示](site/media/demo-1.png)
+![芯片岛冒险的五位伙伴](site/media/party.svg)
 
 不要求你提前懂编程。每关先讲一个故事，用生活中的事解释代码，再给你一个能动手完成的小任务。答错不扣分，所有关卡自由探索，每次尝试都是进步。
 
@@ -45,7 +45,9 @@ python3 scripts/serve.py --host 0.0.0.0
 | 🔧 工具工坊 | [11](lessons/11)–[15](lessons/15) | 过程、字典与数组、文件、错误处理 | 通用平均值工具 |
 | 🏙️ 芯片城 | [16](lessons/16)–[20](lessons/20) | 命名空间、正则、TclOO、模块化、时序余量 | 时序报告分析器 |
 
-每关包括故事、概念说明、图解、可运行示例、待完成代码、目标输出、两级提示、理解题、易错提醒、拓展任务和参考解法。网页与仓库讲义来自同一份课程源文件。
+每关先由机器人芯芯和区域 NPC 带你看一段四幕图解：能播放、暂停、逐步查看，也能切换输入观察变化。20 个场景各有与知识点对应的插图和动作，例如变量背包、金币门、循环采集、文件日记和时序路径。60 组演示输入全部经过真实 Tcl 验证，可一键送入实验室运行。
+
+每关还包括概念说明、可运行示例、待完成代码、目标输出、两级提示、理解题、易错提醒、拓展任务和参考解法。网页与仓库讲义来自同一份课程源文件。剧情图解解释指定示例，实验室的实时回声显示你自己代码的真实输出，详见[角色与场景说明](docs/ADVENTURE.md)。
 
 - 普通关首次通过：100 XP；Boss 首次通过：200 XP。共 2400 XP，4 枚徽章。
 - 不设体力、连续签到或强制锁关。普通关约 10 分钟，Boss 约 20 分钟。
@@ -90,11 +92,17 @@ python3 scripts/check.py 1 lessons/01/starter.tcl
 
 ```sh
 python3 scripts/build_curriculum.py  # 修改课程源后重新生成讲义和 JSON
+python3 scripts/build_adventures.py # 课程生成后更新剧情及演示输入
+node scripts/export_artwork.mjs    # 导出仓库讲义的插图和角色图鉴
 python3 scripts/check.py --all      # 真 tclsh 执行所有示例和答案
 node tests/wasm.mjs                 # 验证网页实际使用的 WASM 引擎与行为检查
+python3 tests/adventures.py         # 原生 Tcl 执行全部 60 组剧情输入
+python3 tests/artwork.py            # 检查 240 个场景帧的 SVG
 python3 tests/site_integrity.py     # 内容、资源及视频完整性
 node --check site/app.js
 node --check site/runner.js
+node --check site/adventure.js
+node --check site/adventure-art.js
 ```
 
 重新生成视频需要 Pillow、ffmpeg 和中文字体，详见 [视频制作说明](docs/VIDEOS.md)。仓库已包含可直接播放的成品，无需重新生成。

@@ -4,6 +4,10 @@
 
 目标：proc · 参数 · return。约 10 分钟，首次通关 +100 XP。
 
+![芯芯与伙伴的第 11 关场景](../../site/media/scenes/level-11.svg)
+
+网页中可播放四幕剧情、切换输入，与 NPC 一起观察代码。打开方式见[仓库首页](../../README.md#现在就打开互动页面)。
+
 proc 定义过程，像一张带输入格子的配方。proc greet {name} {...} 定义 greet，name 是输入参数。调用 greet Ada 时，name 得到 Ada。
 
 过程内部的普通变量通常是局部变量。return 把计算结果交给调用者，puts 把内容显示出来；两者作用不同。参数还可以有默认值。

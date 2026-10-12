@@ -4,6 +4,10 @@
 
 目标：TclOO · class · method。约 10 分钟，首次通关 +100 XP。
 
+![芯芯与伙伴的第 18 关场景](../../site/media/scenes/level-18.svg)
+
+网页中可播放四幕剧情、切换输入，与 NPC 一起观察代码。打开方式见[仓库首页](../../README.md#现在就打开互动页面)。
+
 类像图纸，对象像按图纸造出来的模型。Tcl 8.6 自带 TclOO。oo::class create 定义类，constructor 初始化状态，method 定义对象的动作。
 
 类中 variable 声明对象自己的变量。不同对象各有一份状态，修改一个对象不该影响另一个。最后可以 destroy 对象释放它。

@@ -15,6 +15,16 @@ function workerRun(code,checks=[]){return new Promise((resolve,reject)=>{
 });}
 let failures=0;
 for(const l of data.levels){const r=await workerRun(l.solution,l.checks);const ok=!r.error&&r.output.replace(/\n+$/,'')===l.expected&&r.tests.every(t=>t.ok);console.log(`${ok?'PASS':'FAIL'} WASM ${String(l.id).padStart(2,'0')} ${l.title}`);if(!ok){console.log(r);failures++;}}
+const adventures=JSON.parse(fs.readFileSync(path.join(root,'adventures.json'),'utf8'));
+let variants=0;
+for(const story of adventures){
+ for(const v of story.variants){
+  const r=await workerRun(v.code);
+  const ok=v.props.error?r.error?.includes(v.props.error):!r.error&&r.output.replace(/\n+$/,'')===v.output;
+  if(!ok){console.error('FAIL storyboard',story.id,v.label,r);failures++;}variants++;
+ }
+}
+console.log(`Verified ${variants} illustrated inputs in the real browser WASM runtime`);
 const broken=await workerRun('puts $missing');if(!broken.error?.includes('no such variable'))throw Error('Variable error was not reported');
 const malformed=await workerRun('puts {broken');if(!malformed.error?.includes('missing close-brace'))throw Error('Syntax error was not reported');
 const unicode=await workerRun('puts "你好，芯片岛！"');if(unicode.output!=='你好，芯片岛！')throw Error('Chinese output failed');

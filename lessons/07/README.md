@@ -4,6 +4,10 @@
 
 目标：list · lindex · llength · lappend。约 10 分钟，首次通关 +100 XP。
 
+![芯芯与伙伴的第 7 关场景](../../site/media/scenes/level-07.svg)
+
+网页中可播放四幕剧情、切换输入，与 NPC 一起观察代码。打开方式见[仓库首页](../../README.md#现在就打开互动页面)。
+
 列表像一排格子，每个格子放一件物品。list 可以把多个值组成列表；lappend 往末尾加物品。
 
 lindex bag 0 取第一个物品，索引从 0 开始；llength 计算物品数量。带空格的物品用 list 或花括号保持为一个元素。

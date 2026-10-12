@@ -4,6 +4,10 @@
 
 目标：string · split · join。约 10 分钟，首次通关 +100 XP。
 
+![芯芯与伙伴的第 9 关场景](../../site/media/scenes/level-09.svg)
+
+网页中可播放四幕剧情、切换输入，与 NPC 一起观察代码。打开方式见[仓库首页](../../README.md#现在就打开互动页面)。
+
 string trim 去掉两端空白，string toupper 转大写，string length 数字符。可以用嵌套方括号把步骤串起来。
 
 split 把字符串按分隔字符拆成列表；join 把列表拼成字符串。split 的第二个参数是一组分隔字符，不是一个完整分隔词。

@@ -155,6 +155,7 @@ for l in levels:
  d=ROOT/'lessons'/f'{l["id"]:02d}';d.mkdir(exist_ok=True)
  (d/'starter.tcl').write_text(l['starter']+'\n');(d/'solution.tcl').write_text(l['solution']+'\n');(d/'example.tcl').write_text(l['example']+'\n')
  text=f'# {l["id"]:02d} · {l["title"]}\n\n{l["story"]}\n\n目标：{l["topic"]}。约 {l["minutes"]} 分钟，首次通关 +{l["xp"]} XP。\n\n'
+ text+=f'![芯芯与伙伴的第 {l["id"]} 关场景](../../site/media/scenes/level-{l["id"]:02d}.svg)\n\n网页中可播放四幕剧情、切换输入，与 NPC 一起观察代码。打开方式见[仓库首页](../../README.md#现在就打开互动页面)。\n\n'
  text+='\n\n'.join(l['explain'])+'\n\n## 图解\n\n```text\n'+'\n   ↓\n'.join(l['diagram'])+'\n```\n\n## 先看示例\n\n```tcl\n'+l['example']+'\n```\n\n## 你的任务\n\n'+l['task']+'\n\n预期输出：\n\n```text\n'+l['expected']+'\n```\n\n运行 `tclsh lessons/'+f'{l["id"]:02d}'+'/starter.tcl`。检查：`python3 scripts/check.py '+str(l['id'])+' lessons/'+f'{l["id"]:02d}'+'/starter.tcl`。\n\n<details><summary>给我一点提示</summary>\n\n'+'\n\n'.join(l['hints'])+'\n\n</details>\n\n## 常见坑\n\n'+l['pitfall']+'\n\n## 理解检查\n\n'+l['quiz']+'\n\n'+'\n'.join(f'{i+1}. {c}' for i,c in enumerate(l['choices']))+'\n\n<details><summary>查看解释</summary>\n\n正确选项：'+l['choices'][l['answer']]+'。回到上面的概念，再用示例验证一次。\n\n</details>\n\n## 再试一步\n\n'+l['transfer']+'\n'
  (d/'README.md').write_text(text)
 print(f'Generated {len(levels)} lessons')

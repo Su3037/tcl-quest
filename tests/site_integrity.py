@@ -14,10 +14,12 @@ class Site(unittest.TestCase):
     self.assertGreaterEqual(len(l['explain']),2);self.assertEqual(len(l['hints']),2)
     self.assertLess(l['answer'],len(l['choices']))
     d=ROOT/'lessons'/f'{l["id"]:02d}'
+    self.assertTrue((ROOT/'site/media/scenes'/f'level-{l["id"]:02d}.svg').is_file())
+    self.assertIn(f'level-{l["id"]:02d}.svg',(d/'README.md').read_text())
     for key in ('solution','starter','example'):self.assertEqual((d/(key+'.tcl')).read_text(),l[key]+'\n')
     self.assertIn(l['task'],(d/'README.md').read_text())
  def test_assets(self):
-  for f in ['app.js','style.css','curriculum.json','runner.js','icon.svg','vendor/require.js','vendor/wacl.js','vendor/wacl.wasm','vendor/wacl-library.data','vendor/wacl-custom.data']:
+  for f in ['app.js','adventure.js','adventure-art.js','adventures.json','style.css','curriculum.json','runner.js','icon.svg','vendor/require.js','vendor/wacl.js','vendor/wacl.wasm','vendor/wacl-library.data','vendor/wacl-custom.data']:
    self.assertTrue((ROOT/'site'/f).is_file(),f)
   for i in range(1,5):
    for ext in ('mp4','png','vtt','txt'):self.assertTrue((ROOT/'site/media'/f'demo-{i}.{ext}').is_file())
@@ -28,7 +30,7 @@ class Site(unittest.TestCase):
   hashes=json.loads((ROOT/'site/vendor/SHA256.json').read_text())
   for f,digest in hashes.items():self.assertEqual(hashlib.sha256((ROOT/'site/vendor'/f).read_bytes()).hexdigest(),digest,f)
  def test_no_remote_runtime_dependencies(self):
-  for file in ['index.html','app.js','style.css','runner.js']:
+  for file in ['index.html','app.js','adventure.js','adventure-art.js','style.css','runner.js']:
    s=(ROOT/'site'/file).read_text()
    self.assertNotRegex(s,r'(src|href)=[\"\']https?://[^\"\']+\.(?:js|css)')
  def test_publication_guard(self):
