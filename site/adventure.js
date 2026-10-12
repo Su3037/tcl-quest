@@ -1,12 +1,13 @@
-import {t,localize} from './i18n.js?v=9c235119cbfd';
-import {CAST,portrait,sceneSVG} from './adventure-art.js?v=9c235119cbfd';
+import {storyActionSound} from './action-sounds.js?v=1f251ee98b8c';
+import {t,localize} from './i18n.js?v=1f251ee98b8c';
+import {CAST,portrait,sceneSVG} from './adventure-art.js?v=1f251ee98b8c';
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let current=null;
 const motionKey='tcl-quest-motion';
 function motionPreference(){try{const saved=localStorage.getItem(motionKey);if(saved!==null)return saved==='on';}catch{}return !matchMedia('(prefers-reduced-motion: reduce)').matches;}
 export function clearAdventure(){current?.destroy();current=null;}
 export function updateAdventure(event){current?.update(event);}
-export function mountAdventure(root,lesson,storyboard,onLoad){
+export function mountAdventure(root,lesson,storyboard,onLoad,{onAction=()=>{}}={}){
  clearAdventure();
  const npc=CAST[lesson.world+1],abort=new AbortController();
  let step=0,selection=0,timer=null,motion=motionPreference(),mood='ready';
@@ -14,7 +15,7 @@ export function mountAdventure(root,lesson,storyboard,onLoad){
  root.innerHTML=`<section class="adventure ${motion?'':'still'}" aria-labelledby="scene-title"><header class="adventure-header"><div><span class="eyebrow">STORY IN MOTION · ${esc(storyboard.setting)}</span><h2 id="scene-title">${esc(storyboard.title)}</h2></div><button class="secondary motion-toggle" aria-pressed="${motion}">动作动画 ${motion?'开':'关'}</button></header><div class="scene-layout"><div class="scene-left"><div class="adventure-canvas"></div><div class="scene-controls"><button class="scene-play primary" aria-label="播放四幕图解">▶ 播放剧情</button><button class="scene-prev secondary" aria-label="上一幕">←</button><span class="scene-counter">1 / 4 幕</span><button class="scene-next secondary" aria-label="下一幕">→</button><button class="scene-restart secondary">从头看</button></div></div><div class="scene-reading"><div class="scene-cast"><button class="scene-character" data-person="0" aria-label="认识芯芯">${portrait('robot')}<span>芯芯</span></button><span class="cast-between">一起探索</span><button class="scene-character" data-person="${lesson.world+1}" aria-label="与${npc.name}对话">${portrait(npc.kind)}<span>${npc.name}</span></button><span class="npc-role">${npc.role.split(' · ')[1]}</span></div><div class="npc-dialogue"><strong class="scene-speaker">${npc.name}说</strong><h3 class="scene-beat-title"></h3><p class="scene-beat-text" role="status" aria-live="polite"></p></div><div class="scene-code-label">这一幕对应的 Tcl 代码</div><pre class="scene-code"><code></code></pre><span class="scene-line-hint"></span></div></div><div class="scene-beats" role="group" aria-label="选择剧情分镜">${storyboard.steps.map((b,i)=>`<button data-beat="${i}" aria-pressed="${i===0}"><span>0${i+1}</span>${esc(b.title)}</button>`).join('')}</div><div class="scene-experiment"><div><strong>换个输入，故事会怎样？</strong><p>这里是任务代码的图解演示，不计通关。选择后可送到右侧实验室真实运行。</p></div><div class="scene-variants" role="group" aria-label="切换演示输入">${storyboard.variants.map((v,i)=>`<button class="secondary" data-variant="${i}" aria-pressed="${i===0}">${esc(v.label)}</button>`).join('')}</div><div class="scene-preview"><span>所选代码的预期结果</span><pre></pre></div><div class="scene-send"><button class="secondary scene-load">把这段演示送到实验室 →</button><span>会替换编辑器中的代码</span></div></div><div class="scene-live" data-status="idle" aria-live="polite"><span class="live-indicator" aria-hidden="true"></span><div><strong class="live-title">芯芯的实时回声</strong><p class="live-message">在实验室运行代码，芯芯会带回真实的 Tcl 结果。</p><pre class="live-output" hidden></pre></div></div></section>`;
  const el=root.querySelector('.adventure'),q=s=>el.querySelector(s);
  const variant=()=>storyboard.variants[selection];
- const pause=()=>{clearInterval(timer);timer=null;q('.scene-play').textContent=step===3?'↺ 重播剧情':'▶ 播放剧情';q('.scene-play').setAttribute('aria-label',step===3?'重播四幕图解':'播放四幕图解');};
+ const pause=()=>{onAction(null);clearInterval(timer);timer=null;q('.scene-play').textContent=step===3?'↺ 重播剧情':'▶ 播放剧情';q('.scene-play').setAttribute('aria-label',step===3?'重播四幕图解':'播放四幕图解');};
  function render(){
   const v=variant(),beat=storyboard.steps[step];
   const art=sceneSVG(lesson.id,lesson.world,v.props,step,mood);
@@ -33,11 +34,12 @@ export function mountAdventure(root,lesson,storyboard,onLoad){
   el.querySelectorAll('[data-variant]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.variant===selection)));
   q('.scene-preview pre').textContent=v.props.error?t(`Tcl 错误：${v.props.error}`):v.output||t('（空输出）');localize(el);
  }
- on(q('.scene-play'),'click',()=>{if(timer){pause();return;}if(step===3)step=0;render();q('.scene-play').textContent='Ⅱ 暂停剧情';q('.scene-play').setAttribute('aria-label','暂停四幕图解');timer=setInterval(()=>{step++;render();if(step===3)pause();},2200);});
- on(q('.scene-prev'),'click',()=>{pause();step=Math.max(0,step-1);render();});
- on(q('.scene-next'),'click',()=>{pause();step=Math.min(3,step+1);render();});
+ function move(next){const previous=step;step=next;render();if(step>previous&&!document.hidden){const cue=storyActionSound(lesson.id,step,variant().props);if(cue)onAction(cue);}}
+ on(q('.scene-play'),'click',()=>{if(timer){pause();return;}if(step===3)step=0;render();q('.scene-play').textContent='Ⅱ 暂停剧情';q('.scene-play').setAttribute('aria-label','暂停四幕图解');timer=setInterval(()=>{move(step+1);if(step===3){clearInterval(timer);timer=null;q('.scene-play').textContent='↺ 重播剧情';q('.scene-play').setAttribute('aria-label','重播四幕图解');}},2200);});
+ on(q('.scene-prev'),'click',()=>{pause();move(Math.max(0,step-1));});
+ on(q('.scene-next'),'click',()=>{pause();move(Math.min(3,step+1));});
  on(q('.scene-restart'),'click',()=>{pause();step=0;render();});
- el.querySelectorAll('[data-beat]').forEach(b=>on(b,'click',()=>{pause();step=+b.dataset.beat;render();}));
+ el.querySelectorAll('[data-beat]').forEach(b=>on(b,'click',()=>{pause();move(+b.dataset.beat);}));
  el.querySelectorAll('[data-variant]').forEach(b=>on(b,'click',()=>{pause();selection=+b.dataset.variant;step=0;render();}));
  el.querySelectorAll('[data-person]').forEach(b=>on(b,'click',()=>{pause();const c=CAST[+b.dataset.person];q('.scene-speaker').textContent=`${c.name}说`;q('.scene-beat-title').textContent=c.role;q('.scene-beat-text').textContent=c.intro;}));
  on(q('.scene-load'),'click',()=>{onLoad(variant().code);q('.live-title').textContent='芯芯：演示已经放进实验室';q('.live-message').textContent='点击「运行代码」看真实输出。演示输入可能与任务不同；提交挑战仍按原任务检查。';});

@@ -1,3 +1,4 @@
+import {runtimeActionSound} from '../site/action-sounds.js';
 // Verify the exact vendored WASM and Worker adapter in a Node VM.
 // XMLHttpRequest and importScripts only map local files; no network access.
 import fs from 'node:fs';
@@ -36,6 +37,10 @@ for(const story of adventures){
 console.log(`Verified ${variants} illustrated inputs in the real browser WASM runtime`);
 const loop=await workerRun('set total 0\nforeach n {2 4 6} {incr total $n}\nputs $total',[],true);
 const counts=loop.events.filter(e=>e.kind==='incr').map(e=>e.result);
+const audioModel=createRuntimeModel(8),collectCues=[];
+for(const event of loop.events){const before=structuredClone(audioModel.props),step=audioModel.step;advanceRuntime(audioModel,event);const cue=runtimeActionSound(8,before,audioModel.props,event,step,audioModel.step);if(cue)collectCues.push(cue);}
+if(JSON.stringify(collectCues)!=='["collect","collect","collect"]')throw Error('Scene sounds did not match actual WASM collection steps: '+JSON.stringify(collectCues));
+
 if(JSON.stringify(counts)!=='["2","6","12"]')throw Error('Actual loop milestones were not captured: '+JSON.stringify(loop.events));
 const literal=await workerRun('puts 12',[],true);const literalModel=createRuntimeModel(8);for(const e of literal.events)advanceRuntime(literalModel,e);if(literalModel.props.total!=='?')throw Error('Printed output invented an accumulator variable');
 const dead=await workerRun('# incr total 99\nset total 0\nif {0} {incr total 99}\nputs $total',[],true);

@@ -25,9 +25,24 @@ await sound.setEnabled(false);
 assert.equal(status,'off');assert.ok(context.notes.every(note=>note.stopped===true),'mute cancels all current and queued tones');
 assert.equal(await sound.play('run'),false);
 
+const channels=createSoundPlayer({Context:FakeContext});
+await channels.setEnabled(true,{preview:false});
+assert.equal(await channels.play('collect',{channel:'scene'}),true);
+const channelContext=FakeContext.instances.at(-1),collected=[...channelContext.notes];
+assert.equal(await channels.play('click',{channel:'ui'}),true);
+assert.equal(await channels.play('click',{channel:'ui'}),false,'rapid clicks are bounded');
+const click=channelContext.notes.at(-1);
+channels.stop('scene');
+assert.ok(collected.every(note=>note.stopped===true));
+assert.notEqual(click.stopped,true,'pausing scene audio must not cancel UI feedback');
+channelContext.currentTime+=.07;
+assert.equal(await channels.play('door',{channel:'scene'}),true);
+await channels.setEnabled(false);assert.ok(channelContext.notes.every(note=>note.stopped===true));
+
+const countBeforeRestore=FakeContext.instances.length;
 const saved=createSoundPlayer({Context:FakeContext});
 await saved.setEnabled(true,{preview:false});
-assert.equal(FakeContext.instances.length,1,'restoring preference must not autoplay');
+assert.equal(FakeContext.instances.length,countBeforeRestore,'restoring preference must not autoplay');
 assert.equal(await saved.play('run'),true);
 const savedContext=FakeContext.instances.at(-1);savedContext.state='suspended';
 assert.equal(await saved.play('success'),true);assert.equal(savedContext.resumes,2,'resume again after suspension');
@@ -37,6 +52,12 @@ const delayed=createSoundPlayer({Context:DelayedContext});
 const loading=delayed.setEnabled(true),pendingContext=FakeContext.instances.at(-1);
 await delayed.setEnabled(false);pendingContext.release();
 assert.equal(await loading,false);assert.equal(pendingContext.notes.length,0,'turning off while resume is pending must stay silent');
+
+const paused=createSoundPlayer({Context:DelayedContext});
+await paused.setEnabled(true,{preview:false});
+const queued=paused.play('collect',{channel:'scene'}),queuedContext=FakeContext.instances.at(-1);
+paused.stop('scene');queuedContext.release();
+assert.equal(await queued,false);assert.equal(queuedContext.notes.length,0,'pause cancels scene tones waiting for audio activation');
 
 class RejectedContext extends FakeContext{resume(){return Promise.reject(Error('blocked'));}}
 const blocked=createSoundPlayer({Context:RejectedContext,onStatus:value=>status=value});

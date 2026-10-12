@@ -1,6 +1,7 @@
-import {sceneSVG,CAST} from './adventure-art.js?v=9c235119cbfd';
-import {createRuntimeModel,advanceRuntime} from './runtime-story.js?v=9c235119cbfd';
-import {language,t,localize} from './i18n.js?v=9c235119cbfd';
+import {runtimeActionSound} from './action-sounds.js?v=1f251ee98b8c';
+import {sceneSVG,CAST} from './adventure-art.js?v=1f251ee98b8c';
+import {createRuntimeModel,advanceRuntime} from './runtime-story.js?v=1f251ee98b8c';
+import {language,t,localize} from './i18n.js?v=1f251ee98b8c';
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const b=(zh,en)=>language()==='en'?en:zh;
 let live=null;
@@ -22,7 +23,7 @@ function describe(e){
  if(e.code!==0&&e.code!==2)return b(`执行遇到问题：${e.result}`,`Execution reported a problem: ${e.result}`);
  return b(`${a[0]||e.kind} 已执行${e.result?`，结果是 ${e.result}`:''}`,`${a[0]||e.kind} executed${e.result?`; result: ${e.result}`:''}`);
 }
-export function mountRuntime(root,lesson,storyboard,snapshot){
+export function mountRuntime(root,lesson,storyboard,snapshot,{onAction=()=>{}}={}){
  clearRuntime();
  const abort=new AbortController(),on=(el,type,fn)=>el.addEventListener(type,fn,{signal:abort.signal});
  let model=createRuntimeModel(lesson.id),probe=createRuntimeModel(lesson.id),history=[],cursor=0,paused=false,timer=null,finished=false,outcome=null,validation=null,dirty=false,callbacks=[];
@@ -50,21 +51,29 @@ export function mountRuntime(root,lesson,storyboard,snapshot){
   localize(el);
  }
  function idle(){if(finished&&cursor>=history.length){clearTimeout(timer);timer=null;const done=callbacks;callbacks=[];done.forEach(fn=>fn());}}
- function next(){if(cursor>=history.length){idle();return;}advanceRuntime(model,history[cursor++]);render();idle();}
+ function next(){
+  if(cursor>=history.length){idle();return;}
+  const before=structuredClone(model.props),oldStep=model.step,event=history[cursor++];
+  advanceRuntime(model,event);render();
+  const cue=runtimeActionSound(lesson.id,before,model.props,event,oldStep,model.step);
+  el.dataset.soundCue=cue||'';el.dataset.soundCursor=String(cursor);
+  if(cue&&!document.hidden)onAction(cue);
+  idle();
+ }
  function schedule(){
   if(timer||paused||dirty||cursor>=history.length)return;
   timer=setTimeout(()=>{timer=null;next();schedule();},Math.max(70,520-Math.max(0,history.length-cursor-8)*20));
  }
- function pause(){paused=true;clearTimeout(timer);timer=null;render(false);}
- on(q('.runtime-pause'),'click',()=>{paused=!paused;clearTimeout(timer);timer=null;render(false);if(!paused)schedule();});
- on(q('.runtime-next'),'click',()=>{paused=true;clearTimeout(timer);timer=null;next();});
- on(q('.runtime-replay'),'click',()=>{clearTimeout(timer);timer=null;model=createRuntimeModel(lesson.id);cursor=0;paused=false;dirty=false;render();schedule();});
- on(q('.runtime-last'),'click',()=>{clearTimeout(timer);timer=null;while(cursor<history.length)advanceRuntime(model,history[cursor++]);render(false);idle();});
+ function pause(){onAction(null);paused=true;clearTimeout(timer);timer=null;render(false);}
+ on(q('.runtime-pause'),'click',()=>{onAction(null);paused=!paused;clearTimeout(timer);timer=null;render(false);if(!paused)schedule();});
+ on(q('.runtime-next'),'click',()=>{onAction(null);paused=true;clearTimeout(timer);timer=null;next();});
+ on(q('.runtime-replay'),'click',()=>{onAction(null);clearTimeout(timer);timer=null;model=createRuntimeModel(lesson.id);cursor=0;paused=false;dirty=false;render();schedule();});
+ on(q('.runtime-last'),'click',()=>{onAction(null);el.dataset.soundCue='';clearTimeout(timer);timer=null;while(cursor<history.length)advanceRuntime(model,history[cursor++]);render(false);idle();});
  on(document,'visibilitychange',()=>{if(document.hidden)pause();});
  live={
-  destroy(){clearTimeout(timer);callbacks=[];abort.abort();},
+  destroy(){onAction(null);clearTimeout(timer);callbacks=[];abort.abort();},
   snapshot(){return {lesson:lesson.id,history,cursor,paused,finished,outcome,validation,dirty};},
-  start(){clearTimeout(timer);timer=null;model=createRuntimeModel(lesson.id);probe=createRuntimeModel(lesson.id);history=[];cursor=0;paused=false;finished=false;outcome=null;validation=null;dirty=false;callbacks=[];q('.runtime-warning').hidden=true;render();el.closest('.lab')?.scrollIntoView({block:'start'});},
+  start(){onAction(null);el.dataset.soundCue='';clearTimeout(timer);timer=null;model=createRuntimeModel(lesson.id);probe=createRuntimeModel(lesson.id);history=[];cursor=0;paused=false;finished=false;outcome=null;validation=null;dirty=false;callbacks=[];q('.runtime-warning').hidden=true;render();el.closest('.lab')?.scrollIntoView({block:'start'});},
   push(event){
    const changed=advanceRuntime(probe,event);
    if(changed||['set','incr','lappend','open','gets','call','class','object','object-deleted','error'].includes(event.kind)||event.kind==='stdout'){
@@ -78,7 +87,7 @@ export function mountRuntime(root,lesson,storyboard,snapshot){
    if(event.done){finished=true;outcome=event;}
    render(false);schedule();idle();
   },
-  edited(){if(!history.length&&!finished)return;dirty=true;paused=true;clearTimeout(timer);timer=null;render(false);},
+  edited(){if(!history.length&&!finished)return;onAction(null);dirty=true;paused=true;clearTimeout(timer);timer=null;render(false);},
   after(fn){if(finished&&cursor>=history.length)fn();else callbacks.push(fn);}
  };
  if(snapshot?.lesson===lesson.id){history=snapshot.history;cursor=0;for(const e of history)advanceRuntime(probe,e);while(cursor<snapshot.cursor)advanceRuntime(model,history[cursor++]);paused=snapshot.paused;finished=snapshot.finished;outcome=snapshot.outcome;validation=snapshot.validation;dirty=snapshot.dirty;}

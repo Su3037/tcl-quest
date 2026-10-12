@@ -46,3 +46,13 @@ For responsiveness, each run records at most 256 core execution events, 2048 cha
 Language switching shares drafts and progress and preserves the replay cursor. User code and native Tcl output remain verbatim. English material includes all 20 lessons, NPC dialogue, 80 teaching beats, guides, feedback, illustrations, learning records and four fully English demonstration videos with transcripts.
 
 Reference: [Tcl 8.6 execution-trace documentation](https://www.tcl-lang.org/man/tcl8.6/TclCmd/trace.htm).
+
+## 同步动作反馈 / Synchronized action feedback
+
+动作音效在实时剧情窗显示执行事件时触发，不在 Worker 事件入队时触发。只有实际观察到的道具或状态变化才匹配声音；stdout 不会重复播放先前的采集动作。暂停、编辑、路由切换会取消待播放的场景音效；单步和重播跟随当前画面，快进直接跳到最后，不补播被跳过的声音。教学分镜也在前进到对应一幕时触发声音。所有音效共用顶栏开关，关闭会停止各声部。
+
+答题正确或任务检查通过后显示短暂的全屏庆祝。效果不拦截点击、不改变 XP；首次通关奖励仍等待剧情播放完成。重复通过只显示庆祝，不再次发放 XP。离开页面时清理特效，减少动态效果偏好下使用静态提示。
+
+Scene sounds trigger when the execution replay displays a meaningful state change, not when the Worker queues it. Pause, edits and navigation cancel pending scene tones. Stepping and replay follow the picture; skipping to the end does not play skipped sounds. The teaching storyboard also plays cues when advancing a beat. All cues share the sound toggle.
+
+Correct quiz answers and passed missions show a brief full-screen celebration without capturing input or changing XP. First-completion rewards still wait for the replay to finish; repeat checks do not award XP again. Navigation clears effects, and reduced-motion preferences use a static banner.

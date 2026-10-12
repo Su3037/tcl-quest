@@ -90,3 +90,5 @@ This course teaches Tcl through simplified chip-design data. `lab::area` and `mo
 The course scope references the teacher’s [Tcl Language Course](https://sjtu-yongfu-research-grp.github.io/tcl-language/). Original stories, illustrations and videos were created for this repository. Original material is licensed under [MIT](LICENSE); the bundled Tcl/Wacl/RequireJS runtime retains its own licenses in [vendor](site/vendor/README.md).
 
 Game sounds are off by default. Enable sound in the header to hear a preview; running code, check results and first completion also play short cues. Your sound preference stays in this browser. If sound is blocked, toggle it off and on and check that the browser tab is not muted.
+
+Scene cues follow displayed execution steps: collecting, doors, items, crafting and reading/writing have distinct sounds. Controls and quiz answers also have audio feedback. Correct answers and completed missions trigger a short full-screen celebration without blocking input. Reduced-motion preferences use a static celebration instead. Pausing stops scene sounds; jumping to the end does not play skipped cues.
