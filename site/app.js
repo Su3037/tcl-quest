@@ -1,9 +1,9 @@
-import {createCelebration} from './celebrate.js?v=1f251ee98b8c';
-import {createSoundPlayer} from './sound.js?v=1f251ee98b8c';
-import {initLanguage,language,setLanguage,t,localize,observeTranslations} from './i18n.js?v=1f251ee98b8c';
-import {mountRuntime,clearRuntime,runtimeSnapshot,startRuntime,pushRuntime,finishRuntime,editRuntime,afterRuntime} from './live-runtime.js?v=1f251ee98b8c';
-import {mountAdventure,clearAdventure,updateAdventure} from './adventure.js?v=1f251ee98b8c';
-import {CAST,portrait,partyHTML,bindParty,setArtTranslator} from './adventure-art.js?v=1f251ee98b8c';
+import {createCelebration} from './celebrate.js?v=4944f15110a1';
+import {createSoundPlayer} from './sound.js?v=4944f15110a1';
+import {initLanguage,language,setLanguage,t,localize,observeTranslations} from './i18n.js?v=4944f15110a1';
+import {mountRuntime,clearRuntime,runtimeSnapshot,startRuntime,pushRuntime,finishRuntime,editRuntime,afterRuntime} from './live-runtime.js?v=4944f15110a1';
+import {mountAdventure,clearAdventure,updateAdventure} from './adventure.js?v=4944f15110a1';
+import {CAST,portrait,partyHTML,bindParty,setArtTranslator} from './adventure-art.js?v=4944f15110a1';
 const $ = (q) => document.querySelector(q);
 const esc = (v) => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 document.querySelector('.skip').addEventListener('click',e=>{e.preventDefault();$('#main').focus();$('#main').scrollIntoView();});
@@ -71,8 +71,8 @@ function engineError(key){const e=new Error(t(key));e.translationKey=key;return 
 function evalInWorker(code,checks=[],onEvent=()=>{}){
  return new Promise((resolve,reject)=>{
   let done=false,traceLimit=false,unavailable=false;
-  const worker=new Worker(new URL('runner.js?v=1f251ee98b8c',import.meta.url));
-  let timer=setTimeout(()=>finish(engineError('引擎加载超过 25 秒。请检查页面是否通过 HTTP 打开，或刷新重试。')),25000);
+  const worker=new Worker(new URL('runner.js?v=4944f15110a1',import.meta.url));
+  let timer=setTimeout(()=>finish(engineError('引擎加载超过 25 秒。无需本地部署，请刷新重试；仍失败时请换用最新版浏览器或其他网络。')),25000);
   function finish(err,value){if(done)return;done=true;clearTimeout(timer);worker.terminate();stopRun=null;err?reject(err):resolve({...value,traceLimit,unavailable});}
   stopRun=()=>finish(engineError('本次运行已停止，代码仍保留。'));
   worker.onerror=e=>finish(Error(e.message||t('Tcl 引擎加载失败')));
@@ -157,4 +157,9 @@ try{
  const files=['curriculum.json','curriculum.en.json','adventures.json','adventures.en.json'];
  const loaded=await Promise.all(files.map(async file=>{const r=await fetch(new URL(file,import.meta.url),{cache:'no-cache'});if(!r.ok)throw Error('Could not load '+file);return r.json();}));
  $('#language').disabled=false;courses={zh:loaded[0],en:loaded[1]};stories={zh:loaded[2],en:loaded[3]};refreshLanguage();observeTranslations();route();window.addEventListener('hashchange',()=>route());
-}catch(e){$('#view').innerHTML=`<section class="section-page"><h1>${t('课程暂时没加载出来')}</h1><p>${esc(e.message)}. Start the local HTTP server: <code>python3 scripts/serve.py</code>.</p></section>`;}
+}catch(e){
+ // This also works when the translation catalog itself failed to download.
+ const en=language()==='en';
+ $('#view').innerHTML=`<section class="section-page" data-verbatim><h1>${en?'The course could not load':'课程暂时没加载出来'}</h1><p>${en?'No installation or local server is needed. A course file could not be downloaded. Reload to try again.':'无需安装软件或本地部署。这次没有成功下载课程文件，请刷新重试。'}</p><button id="retry-load" class="primary">${en?'Reload and retry':'刷新重试'}</button><p>${en?'If this keeps happening, open the public link in an up-to-date Chrome, Edge, Firefox or Safari browser, and try another network.':'如果仍然失败，请把公开网址复制到最新版 Chrome、Edge、Firefox 或 Safari 中打开，并尝试其他网络。'}</p><p><a href="https://su3037.github.io/tcl-quest/">https://su3037.github.io/tcl-quest/</a></p><details><summary>${en?'Error details (include these when reporting a problem)':'错误详情（反馈问题时请附上）'}</summary><pre>${esc(e.message)}</pre></details></section>`;
+ $('#retry-load').onclick=()=>location.reload();
+}

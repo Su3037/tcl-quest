@@ -16,6 +16,8 @@ Start with a greeting, explore variables and loops, build reusable tools and fin
 
 No account, installation or local server is needed. GitHub Pages hosts the files; Tcl runs in each visitor’s browser and never uses the author’s Mac. Switch between English and Chinese in the game header.
 
+**Share the public link above, rather than `127.0.0.1`, `localhost` or a downloaded HTML file.** If a link does not open inside a messaging app, try opening it in your system browser.
+
 For local development or a local copy:
 
 ```sh

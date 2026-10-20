@@ -255,7 +255,7 @@ close	close
 故事图解 · 可展开查看四幕教学演示	Story guide · Expand the four-beat teaching demo
 运行超过 5 秒，已停止。检查 while / for 的条件是否会结束。	Stopped after five seconds. Check whether your while / for condition can finish.
 本次运行已停止，代码仍保留。	Run stopped. Your code is still saved.
-引擎加载超过 25 秒。请检查页面是否通过 HTTP 打开，或刷新重试。	The engine took more than 25 seconds to load. Use an HTTP server or refresh and try again.
+引擎加载超过 25 秒。无需本地部署，请刷新重试；仍失败时请换用最新版浏览器或其他网络。	The engine took more than 25 seconds to load. No local setup is needed. Reload, or try an up-to-date browser or another network.
 Tcl 引擎加载失败	Could not load the Tcl engine
 ✓ 答对了！可以回到示例中验证你的理解。	✓ Correct! Return to the example to test your understanding.
 再想一想，看看上面的概念说明；可以继续尝试。	Think again and review the explanation above. You can keep trying.

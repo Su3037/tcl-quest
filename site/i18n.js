@@ -1,4 +1,4 @@
-import {translateText} from './locale-core.js?v=1f251ee98b8c';
+import {translateText} from './locale-core.js?v=4944f15110a1';
 let lang='zh',messages=null;
 try{lang=localStorage.getItem('tcl-quest-language')==='en'?'en':'zh';}catch{}
 const textSources=new WeakMap(),attributeSources=new WeakMap();

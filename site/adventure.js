@@ -1,6 +1,6 @@
-import {storyActionSound} from './action-sounds.js?v=1f251ee98b8c';
-import {t,localize} from './i18n.js?v=1f251ee98b8c';
-import {CAST,portrait,sceneSVG} from './adventure-art.js?v=1f251ee98b8c';
+import {storyActionSound} from './action-sounds.js?v=4944f15110a1';
+import {t,localize} from './i18n.js?v=4944f15110a1';
+import {CAST,portrait,sceneSVG} from './adventure-art.js?v=4944f15110a1';
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let current=null;
 const motionKey='tcl-quest-motion';
